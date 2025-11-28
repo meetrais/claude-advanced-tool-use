@@ -1,10 +1,66 @@
-# Tool Search with Embeddings
+# Tool Search for Claude - Two Approaches
 
-This implementation demonstrates how to scale Claude applications from dozens to thousands of tools using semantic tool search. Instead of providing all tool definitions upfront, Claude can dynamically discover relevant tools on demand, reducing context usage by 90%+ while enabling applications that scale to thousands of tools.
+This directory contains **two different implementations** for scaling Claude applications with tool search. Both enable Claude to dynamically discover tools on demand, reducing context usage by 90%+ while supporting thousands of tools.
+
+## Choose Your Approach
+
+### 1. Client-Side Embeddings (`using-embeddings.py`)
+**Best for**: Full control, custom semantic search, experimentation
+
+Client-side semantic search using SentenceTransformer embeddings. You compute embeddings locally and return matching tools via `tool_reference` blocks.
+
+**Pros:**
+- ✅ Full control over search algorithm
+- ✅ Custom embedding models
+- ✅ Works with any embedding provider
+- ✅ Rich semantic understanding
+
+**Cons:**
+- ❌ Requires additional dependencies (SentenceTransformer, NumPy, PyTorch)
+- ❌ More setup complexity
+- ❌ Client manages embeddings
+
+### 2. Built-in Regex/BM25 (`using-regex-or-bm25.py`)
+**Best for**: Minimal setup, native integration, production use
+
+Uses Anthropic's native tool search with `defer_loading`. The API automatically handles tool discovery using regex or BM25 algorithms.
+
+**Pros:**
+- ✅ Minimal dependencies (just Anthropic SDK)
+- ✅ Native API integration
+- ✅ No embedding management
+- ✅ Choice of regex or BM25 search
+- ✅ Optimized by Anthropic
+
+**Cons:**
+- ❌ Less customization
+- ❌ Fixed to Anthropic's algorithms
+
+---
+
+## Quick Start
+
+**For embeddings approach:**
+```powershell
+pip install -r requirements.txt
+python using-embeddings.py
+```
+
+**For built-in search:**
+```powershell
+pip install anthropic python-dotenv
+python using-regex-or-bm25.py
+```
+
+Both scripts support interactive mode and command-line arguments!
+
+---
+
+# Using Embeddings Implementation
 
 ## Overview
 
-Semantic tool search treats tools as discoverable resources. You give Claude a single `tool_search` tool that returns relevant capabilities on demand, cutting context usage dramatically while maintaining full functionality.
+Client-side semantic search using SentenceTransformer. You provide Claude a custom `tool_search` tool that computes similarity and returns matching tools.
 
 ## Prerequisites
 
@@ -201,12 +257,153 @@ Final Response
 4. **Tool Metadata**: Add usage stats, costs, or reliability scores to search ranking
 5. **Real API Integration**: Replace mock responses with actual service calls
 
+---
+
+# Built-in Regex/BM25 Implementation
+
+## Overview
+
+Uses Anthropic's native tool search capabilities with `defer_loading: true`. The API automatically handles tool discovery using either regex pattern matching or BM25 probabilistic ranking.
+
+## Prerequisites
+
+- Python 3.11 or higher
+- Anthropic API key
+
+## Setup
+
+### Install Minimal Dependencies
+
+```powershell
+pip install anthropic python-dotenv
+```
+
+The built-in approach requires **far fewer dependencies** than embeddings since it uses Anthropic's native search.
+
+## Usage
+
+### Interactive Mode
+
+```powershell
+python using-regex-or-bm25.py
+```
+
+You'll be prompted to:
+1. Choose between custom question or examples
+2. Select search method (regex or BM25)
+
+### Command-Line Usage
+
+**Regex search (default):**
+```powershell
+python using-regex-or-bm25.py --query "What's the weather in Tokyo?"
+```
+
+**BM25 search:**
+```powershell
+python using-regex-or-bm25.py --query "Convert 100 USD to EUR" --method bm25
+```
+
+**Run examples:**
+```powershell
+python using-regex-or-bm25.py --examples --method regex
+```
+
+### Command-Line Options
+
+- `-q, --query "question"` - Ask a question
+- `-e, --examples` - Run demonstrations
+- `-s, --method [regex|bm25]` - Choose search method (default: regex)
+- `-m, --max-turns N` - Max conversation turns (default: 10)
+- `-h, --help` - Show help
+
+## How It Works
+
+### 1. Tools with defer_loading
+
+Tools are marked to be loaded on demand:
+
+```python
+{
+    "name": "get_weather",
+    "description": "Get the current weather in a given location",
+    "input_schema": { ... },
+    "defer_loading": True  # Loaded only when needed
+}
+```
+
+### 2. Native Search Tool
+
+The API includes the appropriate search tool:
+
+```python
+# Regex
+{"type": "tool_search_tool_regex_20251119", "name": "tool_search_tool_regex"}
+
+# BM25
+{"type": "tool_search_tool_bm25_20251119", "name": "tool_search_tool_bm25"}
+```
+
+### 3. Automatic Discovery
+
+The API automatically:
+- Searches for relevant tools when Claude needs them
+- Returns `tool_reference` blocks
+- Loads tools on demand
+- Your code only handles actual tool executions
+
+## Search Methods
+
+### Regex Search
+- **Best for**: Exact keyword matching, pattern-based discovery
+- **Speed**: Very fast
+- **Use when**: You know specific keywords in tool names/descriptions
+
+### BM25 Search
+- **Best for**: Relevance-based ranking, natural language queries
+- **Speed**: Fast with better relevance scoring
+- **Use when**: General purpose, complex multi-topic queries
+
+## Configuration
+
+Choose search method via:
+
+1. **Interactive mode**: Select when prompted
+2. **Command-line**: `--method regex` or `--method bm25`
+3. **Code**: Modify `create_tool_library()` default parameter
+
+## Comparison: Which Approach to Use?
+
+| Criteria | Embeddings | Built-in Regex/BM25 |
+|----------|-----------|-------------------|
+| **Setup Complexity** | High (multiple deps) | Low (just Anthropic SDK) |
+| **Dependencies** | 5+ packages | 2 packages |
+| **Search Control** | Full customization | Fixed algorithms |
+| **Semantic Understanding** | Excellent | Good |
+| **Integration** | Manual | Native/Automatic |
+| **Performance** | Client-side compute | Server-side optimized |
+| **Use Case** | Research, custom needs | Production, simplicity |
+
+**Choose Embeddings when:**
+- You need custom semantic similarity
+- You want to experiment with different models
+- You have existing embedding infrastructure
+- You need complete control over search logic
+
+**Choose Built-in when:**
+- You want minimal setup
+- You prefer native Anthropic integration
+- You need fast, reliable search
+- You want the API to handle complexity
+
 ## Further Reading
 
 - [Claude Tool Use Guide](https://docs.anthropic.com/en/docs/build-with-claude/tool-use)
+- [Advanced Tool Use Documentation](https://docs.anthropic.com/en/docs/build-with-claude/tool-use#advanced-tool-use)
 - [Tool Search Documentation](https://docs.anthropic.com/en/docs/build-with-claude/tool-use#tool-search)
 - [SentenceTransformers Documentation](https://www.sbert.net/)
+- [BM25 Algorithm](https://en.wikipedia.org/wiki/Okapi_BM25)
 
 ## License
 
-This implementation is based on Anthropic's Tool Search cookbook example.
+These implementations are based on Anthropic's Tool Search cookbook examples.
