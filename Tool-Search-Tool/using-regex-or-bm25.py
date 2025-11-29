@@ -95,7 +95,7 @@ def create_tool_library(search_method: str = "regex") -> List[Dict[str, Any]]:
                 },
                 "required": ["location", "days"],
             },
-            "defer_loading": True
+            "defer_loading": True #<= Deferred loading
         },
         {
             "name": "get_timezone",
@@ -110,7 +110,7 @@ def create_tool_library(search_method: str = "regex") -> List[Dict[str, Any]]:
                 },
                 "required": ["location"],
             },
-            "defer_loading": True
+            "defer_loading": True #<= Deferred loading
         },
         {
             "name": "get_air_quality",
@@ -125,7 +125,7 @@ def create_tool_library(search_method: str = "regex") -> List[Dict[str, Any]]:
                 },
                 "required": ["location"],
             },
-            "defer_loading": True
+            "defer_loading": True #<= Deferred loading
         },
         
         # Finance Tools (deferred)
@@ -146,7 +146,7 @@ def create_tool_library(search_method: str = "regex") -> List[Dict[str, Any]]:
                 },
                 "required": ["ticker"],
             },
-            "defer_loading": True
+            "defer_loading": True #<= Deferred loading
         },
         {
             "name": "convert_currency",
@@ -169,7 +169,7 @@ def create_tool_library(search_method: str = "regex") -> List[Dict[str, Any]]:
                 },
                 "required": ["amount", "from_currency", "to_currency"],
             },
-            "defer_loading": True
+            "defer_loading": True #<= Deferred loading
         },
         {
             "name": "calculate_compound_interest",
@@ -194,7 +194,7 @@ def create_tool_library(search_method: str = "regex") -> List[Dict[str, Any]]:
                 },
                 "required": ["principal", "rate", "years"],
             },
-            "defer_loading": True
+            "defer_loading": True #<= Deferred loading
         },
         {
             "name": "get_market_news",
@@ -213,7 +213,7 @@ def create_tool_library(search_method: str = "regex") -> List[Dict[str, Any]]:
                 },
                 "required": ["query"],
             },
-            "defer_loading": True
+            "defer_loading": True #<= Deferred loading
         },
     ]
     
