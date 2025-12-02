@@ -1,13 +1,12 @@
 """
-Tool Search with Embeddings: Scaling Claude to Thousands of Tools
+Traditional Tool Use: All Tools Provided Upfront
 
-This implementation demonstrates how to use semantic tool search to scale Claude applications
-from dozens to thousands of tools by dynamically discovering relevant capabilities on demand.
+This implementation demonstrates the traditional approach to tool use with Claude,
+where ALL tools are provided in every API call. This serves as a baseline for
+comparison with the tool search approaches.
 """
 
 import anthropic
-from sentence_transformers import SentenceTransformer
-import numpy as np
 import json
 from typing import List, Dict, Any
 from dotenv import load_dotenv
@@ -24,19 +23,9 @@ load_dotenv()
 MODEL = "claude-sonnet-4-5-20250929"
 
 # Initialize Claude client (API key loaded from environment)
-claude_client = anthropic.Anthropic()
+client = anthropic.Anthropic()
 
-# Load the SentenceTransformer model
-# all-MiniLM-L6-v2 is a lightweight model with 384 dimensional embeddings
-# It will be downloaded from HuggingFace on first use
-print("\n" + "="*80)
-print("INITIALIZING TOOL SEARCH WITH EMBEDDINGS")
-print("="*80)
-print("\n⏳ Loading SentenceTransformer model (this may take 1-3 minutes on first run)...")
-embedding_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
-print("✓ Model loaded successfully\n")
-
-print("✓ Clients initialized successfully")
+print("✓ Client initialized successfully")
 
 
 # Load tool library from JSON file
@@ -55,126 +44,6 @@ def load_tools_from_json() -> List[Dict[str, Any]]:
 TOOL_LIBRARY = load_tools_from_json()
 
 print(f"✓ Loaded {len(TOOL_LIBRARY)} tools from tools_library.json")
-
-
-def tool_to_text(tool: Dict[str, Any]) -> str:
-    """
-    Convert a tool definition into a text representation for embedding.
-    Combines the tool name, description, and parameter information.
-    """
-    text_parts = [
-        f"Tool: {tool['name']}",
-        f"Description: {tool['description']}",
-    ]
-
-    # Add parameter information
-    if "input_schema" in tool and "properties" in tool["input_schema"]:
-        params = tool["input_schema"]["properties"]
-        param_descriptions = []
-        for param_name, param_info in params.items():
-            param_desc = param_info.get("description", "")
-            param_type = param_info.get("type", "")
-            param_descriptions.append(
-                f"{param_name} ({param_type}): {param_desc}"
-            )
-
-        if param_descriptions:
-            text_parts.append("Parameters: " + ", ".join(param_descriptions))
-
-    return "\n".join(text_parts)
-
-
-# Create embeddings for all tools
-print("Creating embeddings for all tools...")
-
-tool_texts = [tool_to_text(tool) for tool in TOOL_LIBRARY]
-
-# Embed all tools at once using SentenceTransformer
-# The model returns normalized embeddings by default
-tool_embeddings = embedding_model.encode(tool_texts, convert_to_numpy=True)
-
-print(f"✓ Created embeddings with shape: {tool_embeddings.shape}")
-print(f"  - {tool_embeddings.shape[0]} tools")
-print(f"  - {tool_embeddings.shape[1]} dimensions per embedding")
-
-
-def search_tools(query: str, top_k: int = 5) -> List[Dict[str, Any]]:
-    """
-    Search for tools using semantic similarity.
-
-    Args:
-        query: Natural language description of what tool is needed
-        top_k: Number of top tools to return
-
-    Returns:
-        List of tool definitions most relevant to the query
-    """
-    # Embed the query using SentenceTransformer
-    query_embedding = embedding_model.encode(query, convert_to_numpy=True)
-
-    # Calculate cosine similarity using dot product
-    # SentenceTransformer returns normalized embeddings, so dot product = cosine similarity
-    similarities = np.dot(tool_embeddings, query_embedding)
-
-    # Get top k indices
-    top_indices = np.argsort(similarities)[-top_k:][::-1]
-
-    # Return the corresponding tools with their scores
-    results = []
-    for idx in top_indices:
-        results.append(
-            {"tool": TOOL_LIBRARY[idx], "similarity_score": float(similarities[idx])}
-        )
-
-    return results
-
-
-# The tool_search tool definition
-TOOL_SEARCH_DEFINITION = {
-    "name": "tool_search",
-    "description": "Search for available tools that can help with a task. Returns tool definitions for matching tools. Use this when you need a tool but don't have it available yet.",
-    "input_schema": {
-        "type": "object",
-        "properties": {
-            "query": {
-                "type": "string",
-                "description": "Natural language description of what kind of tool you need (e.g., 'weather information', 'currency conversion', 'stock prices')",
-            },
-            "top_k": {
-                "type": "number",
-                "description": "Number of tools to return (default: 5)",
-            },
-        },
-        "required": ["query"],
-    },
-}
-
-print("✓ Tool search definition created")
-
-
-def handle_tool_search(query: str, top_k: int = 5) -> List[Dict[str, Any]]:
-    """
-    Handle a tool_search invocation and return tool references.
-
-    Returns a list of tool_reference content blocks for discovered tools.
-    """
-    # Search for relevant tools
-    results = search_tools(query, top_k=top_k)
-
-    # Create tool_reference objects instead of full definitions
-    tool_references = [
-        {"type": "tool_reference", "tool_name": result["tool"]["name"]}
-        for result in results
-    ]
-
-    print(f"\n🔍 Tool search: '{query}'")
-    print(f"   Found {len(tool_references)} tools:")
-    for i, result in enumerate(results, 1):
-        print(
-            f"   {i}. {result['tool']['name']} (similarity: {result['similarity_score']:.3f})"
-        )
-
-    return tool_references
 
 
 def mock_tool_execution(tool_name: str, tool_input: Dict[str, Any]) -> str:
@@ -306,40 +175,37 @@ def mock_tool_execution(tool_name: str, tool_input: Dict[str, Any]) -> str:
 print("✓ Universal mock tool execution function created")
 
 
-def run_tool_search_conversation(user_message: str, max_turns: int = 5) -> None:
+def run_conversation(user_query: str, max_turns: int = 10) -> None:
     """
-    Run a conversation with Claude using the tool search pattern.
-
+    Run a conversation with Claude using traditional tool use (all tools provided upfront).
+    
     Args:
-        user_message: The initial user message
+        user_query: The user's question or request
         max_turns: Maximum number of conversation turns
     """
     print(f"\n{'='*80}")
-    print(f"USER: {user_message}")
+    print(f"USER: {user_query}")
     print(f"{'='*80}\n")
-
-    # Initialize conversation with only tool_search available
-    messages = [{"role": "user", "content": user_message}]
+    
+    # Initialize messages
+    messages = [{"role": "user", "content": user_query}]
     
     # Initialize token usage tracking
     total_input_tokens = 0
     total_output_tokens = 0
-    total_tool_search_requests = 0
-
-    for turn in range(max_turns):
-        print(f"\n--- Turn {turn + 1} ---")
-
+    
+    turn = 0
+    while turn < max_turns:
+        turn += 1
+        print(f"\n--- Turn {turn} ---")
+        
         try:
-            # Call Claude with current message history
-            response = claude_client.messages.create(
+            # Call Claude with ALL tools provided upfront
+            response = client.messages.create(
                 model=MODEL,
-                max_tokens=1024,
-                tools=TOOL_LIBRARY + [TOOL_SEARCH_DEFINITION],
+                max_tokens=2048,
+                tools=TOOL_LIBRARY,  # All tools sent with every request
                 messages=messages,
-                # IMPORTANT: This beta header enables tool definitions in tool results
-                extra_headers={
-                    "anthropic-beta": "advanced-tool-use-2025-11-20"
-                },
             )
         except Exception as e:
             print(f"\n❌ Error calling API: {e}")
@@ -362,30 +228,20 @@ def run_tool_search_conversation(user_message: str, max_turns: int = 5) -> None:
         usage = response.usage
         turn_input_tokens = usage.input_tokens
         turn_output_tokens = usage.output_tokens
-        turn_tool_search_requests = 0
-        
-        # Check for server_tool_use in usage
-        if hasattr(usage, 'server_tool_use') and usage.server_tool_use:
-            # server_tool_use is a Pydantic object, access attributes directly
-            if hasattr(usage.server_tool_use, 'tool_search_requests'):
-                turn_tool_search_requests = usage.server_tool_use.tool_search_requests
         
         # Accumulate totals
         total_input_tokens += turn_input_tokens
         total_output_tokens += turn_output_tokens
-        total_tool_search_requests += turn_tool_search_requests
         
         # Display turn usage
         print(f"\n📊 Token usage for this turn:")
         print(f"   Input tokens: {turn_input_tokens}")
         print(f"   Output tokens: {turn_output_tokens}")
-        if turn_tool_search_requests > 0:
-            print(f"   Tool search requests: {turn_tool_search_requests}")
-
+        
         # Add assistant's response to messages
         messages.append({"role": "assistant", "content": response.content})
-
-        # Check if we're done
+        
+        # Handle different stop reasons
         if response.stop_reason == "end_turn":
             print("\n✓ Conversation complete\n")
             # Print final response
@@ -393,64 +249,55 @@ def run_tool_search_conversation(user_message: str, max_turns: int = 5) -> None:
                 if block.type == "text":
                     print(f"ASSISTANT: {block.text}")
             break
-
-        # Handle tool uses
-        if response.stop_reason == "tool_use":
+            
+        elif response.stop_reason == "tool_use":
+            # Handle tool use requests
             tool_results = []
-
+            
             for block in response.content:
                 if block.type == "text":
                     print(f"\nASSISTANT: {block.text}")
-
+                
                 elif block.type == "tool_use":
                     tool_name = block.name
                     tool_input = block.input
                     tool_use_id = block.id
-
+                    
                     print(f"\n🔧 Tool invocation: {tool_name}")
                     print(f"   Input: {json.dumps(tool_input, indent=2)}")
-
-                    if tool_name == "tool_search":
-                        # Handle tool search
-                        query = tool_input["query"]
-                        top_k = tool_input.get("top_k", 5)
-
-                        # Get tool references
-                        tool_references = handle_tool_search(query, top_k)
-
-                        # Create tool result with tool_reference content blocks
-                        tool_results.append(
-                            {
-                                "type": "tool_result",
-                                "tool_use_id": tool_use_id,
-                                "content": tool_references,
-                            }
-                        )
+                    
+                    # Execute the tool
+                    mock_result = mock_tool_execution(tool_name, tool_input)
+                    
+                    # Print a preview of the result
+                    if len(mock_result) > 150:
+                        print(f"   ✅ Mock result: {mock_result[:150]}...")
                     else:
-                        # Execute the discovered tool with mock data
-                        mock_result = mock_tool_execution(tool_name, tool_input)
-
-                        # Print a preview of the result
-                        if len(mock_result) > 150:
-                            print(f"   ✅ Mock result: {mock_result[:150]}...")
-                        else:
-                            print(f"   ✅ Mock result: {mock_result}")
-
-                        tool_results.append(
-                            {
-                                "type": "tool_result",
-                                "tool_use_id": tool_use_id,
-                                "content": mock_result,
-                            }
-                        )
-
-            # Add tool results to messages
+                        print(f"   ✅ Mock result: {mock_result}")
+                    
+                    tool_results.append(
+                        {
+                            "type": "tool_result",
+                            "tool_use_id": tool_use_id,
+                            "content": mock_result,
+                        }
+                    )
+            
+            # Add tool results to messages if any
             if tool_results:
                 messages.append({"role": "user", "content": tool_results})
-        else:
-            print(f"\nUnexpected stop reason: {response.stop_reason}")
+        
+        elif response.stop_reason == "max_tokens":
+            print("\n⚠️ Reached max tokens limit")
             break
-
+        
+        else:
+            print(f"\n⚠️ Unexpected stop reason: {response.stop_reason}")
+            break
+    
+    if turn >= max_turns:
+        print(f"\n⚠️ Reached maximum turns ({max_turns})")
+    
     # Display token usage summary
     print(f"\n{'='*80}")
     print("📊 TOKEN USAGE SUMMARY")
@@ -458,39 +305,31 @@ def run_tool_search_conversation(user_message: str, max_turns: int = 5) -> None:
     print(f"Total input tokens:  {total_input_tokens}")
     print(f"Total output tokens: {total_output_tokens}")
     print(f"Total tokens:        {total_input_tokens + total_output_tokens}")
-    if total_tool_search_requests > 0:
-        print(f"Tool search requests: {total_tool_search_requests}")
     print(f"{'='*80}\n")
 
 
-print("✓ Conversation loop implemented")
-
-
 def main():
-    """Main function to run examples or process user queries from command line."""
+    """Main function with command-line interface."""
     parser = argparse.ArgumentParser(
-        description="Tool Search with Embeddings - Semantic tool discovery for Claude",
+        description="Traditional Tool Use - All tools provided upfront (baseline)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   # Interactive mode (prompts for input)
-  python using-embeddings.py
+  python without_tool_search.py
   
-  # Run example demonstrations
-  python using-embeddings.py --examples
+  # Ask a question directly
+  python without_tool_search.py --query "What's the weather in Tokyo?"
   
-  # Ask a custom question
-  python using-embeddings.py --query "What's the weather in Paris?"
-  
-  # Ask a question with custom max turns
-  python using-embeddings.py --query "Convert 100 USD to EUR" --max-turns 3
+  # Run examples
+  python without_tool_search.py --examples
         """
     )
     
     parser.add_argument(
         "-q", "--query",
         type=str,
-        help="Your question or request for Claude to process using tool search"
+        help="Your question or request for Claude to process"
     )
     
     parser.add_argument(
@@ -502,8 +341,8 @@ Examples:
     parser.add_argument(
         "-m", "--max-turns",
         type=int,
-        default=5,
-        help="Maximum number of conversation turns (default: 5)"
+        default=10,
+        help="Maximum number of conversation turns (default: 10)"
     )
     
     args = parser.parse_args()
@@ -511,15 +350,15 @@ Examples:
     # If no arguments provided, enter interactive mode
     if not args.query and not args.examples:
         print("\n" + "="*80)
-        print("Tool Search with Embeddings")
+        print("Traditional Tool Use (Baseline)")
         print("="*80)
-        print("\nAsk a question and Claude will use tool search to find the right tools.\n")
+        print("\nAll tools are provided upfront in every API call.\n")
         
         query = input("Enter your question: ").strip()
         
         if query:
             print("\n" + "="*80)
-            run_tool_search_conversation(query, max_turns=args.max_turns)
+            run_conversation(query, max_turns=args.max_turns)
         else:
             print("\n⚠️ No question provided. Exiting.")
             sys.exit(0)
@@ -527,30 +366,33 @@ Examples:
     # Run examples if requested via command line
     elif args.examples:
         print("\n" + "="*80)
-        print("Tool Search with Embeddings - Example Demonstrations")
+        print("Traditional Tool Use Examples (Baseline)")
         print("="*80)
         
         # Example 1: Weather Query
         print("\n### Example 1: Weather Query ###")
-        run_tool_search_conversation("What's the weather like in Tokyo?", max_turns=args.max_turns)
+        run_conversation(
+            "What's the weather like in Tokyo?",
+            max_turns=args.max_turns
+        )
         
         # Example 2: Finance Query
         print("\n### Example 2: Finance Query ###")
-        run_tool_search_conversation(
+        run_conversation(
             "If I invest $10,000 at 5% annual interest for 10 years with monthly compounding, how much will I have?",
             max_turns=args.max_turns
         )
         
         # Example 3: Mixed Query
         print("\n### Example 3: Mixed Query ###")
-        run_tool_search_conversation(
+        run_conversation(
             "What's the current stock price of AAPL and what's the weather in San Francisco?",
             max_turns=args.max_turns
         )
     
     # Process user query if provided via command line
     elif args.query:
-        run_tool_search_conversation(args.query, max_turns=args.max_turns)
+        run_conversation(args.query, max_turns=args.max_turns)
 
 
 if __name__ == "__main__":

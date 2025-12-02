@@ -14,6 +14,7 @@ import random
 from datetime import datetime, timedelta
 import argparse
 import sys
+import os
 
 # Load environment variables from .env file
 load_dotenv()
@@ -27,7 +28,19 @@ client = anthropic.Anthropic()
 print("✓ Client initialized successfully")
 
 
-# Define our comprehensive tool library with defer_loading
+# Load tool library from JSON file
+def load_tools_from_json() -> List[Dict[str, Any]]:
+    """Load tool definitions from the shared tools_library.json file."""
+    # Get the path to the JSON file (one level up from this script)
+    json_path = os.path.join(os.path.dirname(__file__), '..', 'tools_library.json')
+    
+    with open(json_path, 'r') as f:
+        data = json.load(f)
+    
+    return data['tools']
+
+
+# Define our tool library creation with defer_loading
 # All tools except the search tool itself are marked as deferred
 def create_tool_library(search_method: str = "regex") -> List[Dict[str, Any]]:
     """
@@ -39,6 +52,9 @@ def create_tool_library(search_method: str = "regex") -> List[Dict[str, Any]]:
     Returns:
         List of tool definitions including the search tool
     """
+    
+    # Load tools from JSON
+    base_tools = load_tools_from_json()
     
     # Choose the appropriate search tool
     if search_method == "regex":
@@ -52,170 +68,17 @@ def create_tool_library(search_method: str = "regex") -> List[Dict[str, Any]]:
             "name": "tool_search_tool_bm25"
         }
     
-    # Define all available tools with defer_loading=True
-    tools = [
-        # The search tool itself (not deferred)
-        search_tool,
-        
-        # Weather Tools (deferred)
-        {
-            "name": "get_weather",
-            "description": "Get the current weather in a given location",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "location": {
-                        "type": "string",
-                        "description": "The city and state, e.g. San Francisco, CA",
-                    },
-                    "unit": {
-                        "type": "string",
-                        "enum": ["celsius", "fahrenheit"],
-                        "description": "The unit of temperature",
-                    },
-                },
-                "required": ["location"],
-            },
-            "defer_loading": True
-        },
-        {
-            "name": "get_forecast",
-            "description": "Get the weather forecast for multiple days ahead",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "location": {
-                        "type": "string",
-                        "description": "The city and state",
-                    },
-                    "days": {
-                        "type": "number",
-                        "description": "Number of days to forecast (1-10)",
-                    },
-                },
-                "required": ["location", "days"],
-            },
-            "defer_loading": True #<= Deferred loading
-        },
-        {
-            "name": "get_timezone",
-            "description": "Get the current timezone and time for a location",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "location": {
-                        "type": "string",
-                        "description": "City name or timezone identifier",
-                    }
-                },
-                "required": ["location"],
-            },
-            "defer_loading": True #<= Deferred loading
-        },
-        {
-            "name": "get_air_quality",
-            "description": "Get current air quality index and pollutant levels for a location",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "location": {
-                        "type": "string",
-                        "description": "City name or coordinates",
-                    }
-                },
-                "required": ["location"],
-            },
-            "defer_loading": True #<= Deferred loading
-        },
-        
-        # Finance Tools (deferred)
-        {
-            "name": "get_stock_price",
-            "description": "Get the current stock price and market data for a given ticker symbol",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "ticker": {
-                        "type": "string",
-                        "description": "Stock ticker symbol (e.g., AAPL, GOOGL)",
-                    },
-                    "include_history": {
-                        "type": "boolean",
-                        "description": "Include historical data",
-                    },
-                },
-                "required": ["ticker"],
-            },
-            "defer_loading": True #<= Deferred loading
-        },
-        {
-            "name": "convert_currency",
-            "description": "Convert an amount from one currency to another using current exchange rates",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "amount": {
-                        "type": "number",
-                        "description": "Amount to convert",
-                    },
-                    "from_currency": {
-                        "type": "string",
-                        "description": "Source currency code (e.g., USD)",
-                    },
-                    "to_currency": {
-                        "type": "string",
-                        "description": "Target currency code (e.g., EUR)",
-                    },
-                },
-                "required": ["amount", "from_currency", "to_currency"],
-            },
-            "defer_loading": True #<= Deferred loading
-        },
-        {
-            "name": "calculate_compound_interest",
-            "description": "Calculate compound interest for investments over time",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "principal": {
-                        "type": "number",
-                        "description": "Initial investment amount",
-                    },
-                    "rate": {
-                        "type": "number",
-                        "description": "Annual interest rate (as percentage)",
-                    },
-                    "years": {"type": "number", "description": "Number of years"},
-                    "frequency": {
-                        "type": "string",
-                        "enum": ["daily", "monthly", "quarterly", "annually"],
-                        "description": "Compounding frequency",
-                    },
-                },
-                "required": ["principal", "rate", "years"],
-            },
-            "defer_loading": True #<= Deferred loading
-        },
-        {
-            "name": "get_market_news",
-            "description": "Get recent financial news and market updates for a specific company or sector",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "query": {
-                        "type": "string",
-                        "description": "Company name, ticker symbol, or sector",
-                    },
-                    "limit": {
-                        "type": "number",
-                        "description": "Maximum number of news articles to return",
-                    },
-                },
-                "required": ["query"],
-            },
-            "defer_loading": True #<= Deferred loading
-        },
-    ]
+    #Add defer_loading to all loaded tools
+    deferred_tools = []
+    for tool in base_tools:
+        tool_with_defer = tool.copy()
+        tool_with_defer["defer_loading"] = True
+        deferred_tools.append(tool_with_defer)
+    
+    # Combine search tool + all deferred tools
+    tools = [search_tool] + deferred_tools
+    
+    print(f"\u2713 Created tool library with {len(deferred_tools)} deferred tools ({search_method} search)")
     
     return tools
 
@@ -414,22 +277,68 @@ def run_conversation(user_query: str, search_method: str = "regex", max_turns: i
     # Initialize messages
     messages = [{"role": "user", "content": user_query}]
     
+    # Initialize token usage tracking
+    total_input_tokens = 0
+    total_output_tokens = 0
+    total_tool_search_requests = 0
+    
     turn = 0
     while turn < max_turns:
         turn += 1
         print(f"\n--- Turn {turn} ---")
         
-        # Call Claude with all tool definitions (most are deferred)
-        # IMPORTANT: Requires beta header for advanced tool use features
-        response = client.messages.create(
-            model=MODEL,
-            max_tokens=2048,
-            tools=tools,
-            messages=messages,
-            extra_headers={
-                "anthropic-beta": "advanced-tool-use-2025-11-20"
-            }
-        )
+        try:
+            # Call Claude with all tool definitions (most are deferred)
+            # IMPORTANT: Requires beta header for advanced tool use features
+            response = client.messages.create(
+                model=MODEL,
+                max_tokens=2048,
+                tools=tools,
+                messages=messages,
+                extra_headers={
+                    "anthropic-beta": "advanced-tool-use-2025-11-20"
+                }
+            )
+        except Exception as e:
+            print(f"\n❌ Error calling API: {e}")
+            print(f"   Error type: {type(e).__name__}")
+            if hasattr(e, 'response'):
+                print(f"   HTTP Status: {getattr(e.response, 'status_code', 'N/A')}")
+            print(f"\n   Last message sent had {len(messages)} message(s)")
+            if messages:
+                print(f"   Last message role: {messages[-1]['role']}")
+                print(f"   Last message content type: {type(messages[-1]['content'])}")
+            break
+        
+        # Validate response has content
+        if not response.content:
+            print("\n⚠️ Warning: Response has no content")
+            print(f"   Stop reason: {response.stop_reason}")
+            break
+        
+        # Track token usage for this turn
+        usage = response.usage
+        turn_input_tokens = usage.input_tokens
+        turn_output_tokens = usage.output_tokens
+        turn_tool_search_requests = 0
+        
+        # Check for server_tool_use in usage
+        if hasattr(usage, 'server_tool_use') and usage.server_tool_use:
+            # server_tool_use is a Pydantic object, access attributes directly
+            if hasattr(usage.server_tool_use, 'tool_search_requests'):
+                turn_tool_search_requests = usage.server_tool_use.tool_search_requests
+        
+        # Accumulate totals
+        total_input_tokens += turn_input_tokens
+        total_output_tokens += turn_output_tokens
+        total_tool_search_requests += turn_tool_search_requests
+        
+        # Display turn usage
+        print(f"\n📊 Token usage for this turn:")
+        print(f"   Input tokens: {turn_input_tokens}")
+        print(f"   Output tokens: {turn_output_tokens}")
+        if turn_tool_search_requests > 0:
+            print(f"   Tool search requests: {turn_tool_search_requests}")
         
         # Add assistant's response to messages
         messages.append({"role": "assistant", "content": response.content})
@@ -460,12 +369,17 @@ def run_conversation(user_query: str, search_method: str = "regex", max_turns: i
                     print(f"   Input: {json.dumps(tool_input, indent=2)}")
                     
                     # The API handles tool_search_tool_regex and tool_search_tool_bm25 automatically
-                    # We only need to handle our actual executable tools
+                    # but we still need to provide a tool_result (can be empty)
                     if tool_name in ["tool_search_tool_regex", "tool_search_tool_bm25"]:
                         print(f"   ℹ️  Search tool handled automatically by API")
-                        # The API will automatically return tool_reference blocks
-                        # No need to provide a result for this
-                        continue
+                        # Provide empty tool result for built-in search tools
+                        tool_results.append(
+                            {
+                                "type": "tool_result",
+                                "tool_use_id": tool_use_id,
+                                "content": "",
+                            }
+                        )
                     
                     # Execute our custom tools
                     else:
@@ -500,7 +414,16 @@ def run_conversation(user_query: str, search_method: str = "regex", max_turns: i
     if turn >= max_turns:
         print(f"\n⚠️ Reached maximum turns ({max_turns})")
     
-    print(f"\n{'='*80}\n")
+    # Display token usage summary
+    print(f"\n{'='*80}")
+    print("📊 TOKEN USAGE SUMMARY")
+    print(f"{'='*80}")
+    print(f"Total input tokens:  {total_input_tokens}")
+    print(f"Total output tokens: {total_output_tokens}")
+    print(f"Total tokens:        {total_input_tokens + total_output_tokens}")
+    if total_tool_search_requests > 0:
+        print(f"Tool search requests: {total_tool_search_requests}")
+    print(f"{'='*80}\n")
 
 
 def main():
@@ -556,77 +479,27 @@ Examples:
     # If no arguments provided, enter interactive mode
     if not args.query and not args.examples:
         print("\n" + "="*80)
-        print("Tool Search with Built-in Regex/BM25 - Interactive Mode")
+        print("Tool Search with Built-in Regex/BM25")
         print("="*80)
-        print("\nThis implementation uses Anthropic's built-in tool search features.")
-        print("Tools are marked with defer_loading=True and loaded on demand.\n")
-        print("Options:")
-        print("  1. Enter a custom question")
-        print("  2. Run example demonstrations")
-        print("  3. Exit")
-        print("\n" + "-"*80)
+        print("\nAsk a question and Claude will use tool search to find the right tools.\n")
         
-        choice = input("\nEnter your choice (1-3): ").strip()
+        # Ask user to choose search method
+        print("Choose search method:")
+        print("  1. Regex (pattern matching)")
+        print("  2. BM25 (probabilistic ranking)")
+        method_choice = input("\nEnter your choice (1-2, default: 1): ").strip()
         
-        if choice == "1":
-            query = input("\nEnter your question: ").strip()
-            if not query:
-                print("\n⚠️ No question provided. Exiting.")
-                sys.exit(0)
-            
-            print("\nChoose search method:")
-            print("  1. Regex (pattern matching)")
-            print("  2. BM25 (probabilistic ranking)")
-            method_choice = input("\nEnter your choice (1-2, default: 1): ").strip()
-            
-            search_method = "bm25" if method_choice == "2" else "regex"
-            
+        search_method = "bm25" if method_choice == "2" else "regex"
+        print(f"\nSelected method: {search_method.upper()}\n")
+        
+        query = input("Enter your question: ").strip()
+        
+        if query:
             print("\n" + "="*80)
             run_conversation(query, search_method=search_method, max_turns=args.max_turns)
-            
-        elif choice == "2":
-            print("\nChoose search method:")
-            print("  1. Regex (pattern matching)")
-            print("  2. BM25 (probabilistic ranking)")
-            method_choice = input("\nEnter your choice (1-2, default: 1): ").strip()
-            
-            search_method = "bm25" if method_choice == "2" else "regex"
-            
-            print("\n" + "="*80)
-            print(f"Running Example Demonstrations with {search_method.upper()}")
-            print("="*80)
-            
-            # Example 1: Weather Query
-            print("\n### Example 1: Weather Query ###")
-            run_conversation(
-                "What's the weather like in Tokyo?",
-                search_method=search_method,
-                max_turns=args.max_turns
-            )
-            
-            # Example 2: Finance Query
-            print("\n### Example 2: Finance Query ###")
-            run_conversation(
-                "If I invest $10,000 at 5% annual interest for 10 years with monthly compounding, how much will I have?",
-                search_method=search_method,
-                max_turns=args.max_turns
-            )
-            
-            # Example 3: Mixed Query
-            print("\n### Example 3: Mixed Query ###")
-            run_conversation(
-                "What's the current stock price of AAPL and what's the weather in San Francisco?",
-                search_method=search_method,
-                max_turns=args.max_turns
-            )
-            
-        elif choice == "3":
-            print("\n👋 Goodbye!")
-            sys.exit(0)
-            
         else:
-            print("\n⚠️ Invalid choice. Exiting.")
-            sys.exit(1)
+            print("\n⚠️ No question provided. Exiting.")
+            sys.exit(0)
     
     # Run examples if requested via command line
     elif args.examples:

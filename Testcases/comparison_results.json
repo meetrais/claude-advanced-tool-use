@@ -1,0 +1,192 @@
+{
+  "timestamp": "2025-12-01T21:04:44.819412",
+  "test_queries": [
+    {
+      "name": "Single Weather Query",
+      "query": "What's the weather in Tokyo?",
+      "description": "Simple query requiring one weather tool"
+    },
+    {
+      "name": "Single Finance Query",
+      "query": "Convert 500 EUR to USD",
+      "description": "Simple query requiring one finance tool"
+    },
+    {
+      "name": "Compound Interest Calculation",
+      "query": "If I invest $10,000 at 5% annual interest for 10 years with monthly compounding, how much will I have?",
+      "description": "Complex finance query"
+    },
+    {
+      "name": "Mixed Domain Query",
+      "query": "What's the current stock price of AAPL and what's the weather in San Francisco?",
+      "description": "Query requiring tools from both domains"
+    },
+    {
+      "name": "Multi-Tool Finance Query",
+      "query": "Get the stock price of GOOGL and calculate interest on $5000 at 3% for 5 years",
+      "description": "Query requiring multiple finance tools"
+    }
+  ],
+  "results": [
+    {
+      "name": "Single Weather Query",
+      "query": "What's the weather in Tokyo?",
+      "description": "Simple query requiring one weather tool",
+      "traditional": {
+        "input_tokens": 11144,
+        "output_tokens": 110,
+        "total_tokens": 11254,
+        "turns": 2
+      },
+      "embeddings": {
+        "input_tokens": 11428,
+        "output_tokens": 90,
+        "total_tokens": 11518,
+        "tool_search_requests": 0,
+        "turns": 2
+      },
+      "regex": {
+        "input_tokens": 3248,
+        "output_tokens": 236,
+        "total_tokens": 3484,
+        "tool_search_requests": 0,
+        "turns": 2
+      },
+      "bm25": {
+        "input_tokens": 3190,
+        "output_tokens": 254,
+        "total_tokens": 3444,
+        "tool_search_requests": 0,
+        "turns": 2
+      }
+    },
+    {
+      "name": "Single Finance Query",
+      "query": "Convert 500 EUR to USD",
+      "description": "Simple query requiring one finance tool",
+      "traditional": {
+        "input_tokens": 11218,
+        "output_tokens": 120,
+        "total_tokens": 11338,
+        "turns": 2
+      },
+      "embeddings": {
+        "input_tokens": 11502,
+        "output_tokens": 124,
+        "total_tokens": 11626,
+        "tool_search_requests": 0,
+        "turns": 2
+      },
+      "regex": {
+        "input_tokens": 3042,
+        "output_tokens": 259,
+        "total_tokens": 3301,
+        "tool_search_requests": 0,
+        "turns": 2
+      },
+      "bm25": {
+        "input_tokens": 3786,
+        "output_tokens": 313,
+        "total_tokens": 4099,
+        "tool_search_requests": 0,
+        "turns": 2
+      }
+    },
+    {
+      "name": "Compound Interest Calculation",
+      "query": "If I invest $10,000 at 5% annual interest for 10 years with monthly compounding, how much will I have?",
+      "description": "Complex finance query",
+      "traditional": {
+        "input_tokens": 11281,
+        "output_tokens": 220,
+        "total_tokens": 11501,
+        "turns": 2
+      },
+      "embeddings": {
+        "input_tokens": 11565,
+        "output_tokens": 206,
+        "total_tokens": 11771,
+        "tool_search_requests": 0,
+        "turns": 2
+      },
+      "regex": {
+        "input_tokens": 3219,
+        "output_tokens": 379,
+        "total_tokens": 3598,
+        "tool_search_requests": 0,
+        "turns": 2
+      },
+      "bm25": {
+        "input_tokens": 3125,
+        "output_tokens": 341,
+        "total_tokens": 3466,
+        "tool_search_requests": 0,
+        "turns": 2
+      }
+    },
+    {
+      "name": "Mixed Domain Query",
+      "query": "What's the current stock price of AAPL and what's the weather in San Francisco?",
+      "description": "Query requiring tools from both domains",
+      "traditional": {
+        "input_tokens": 11354,
+        "output_tokens": 176,
+        "total_tokens": 11530,
+        "turns": 2
+      },
+      "embeddings": {
+        "input_tokens": 11663,
+        "output_tokens": 208,
+        "total_tokens": 11871,
+        "tool_search_requests": 0,
+        "turns": 2
+      },
+      "regex": {
+        "input_tokens": 4809,
+        "output_tokens": 442,
+        "total_tokens": 5251,
+        "tool_search_requests": 0,
+        "turns": 2
+      },
+      "bm25": {
+        "input_tokens": 4146,
+        "output_tokens": 409,
+        "total_tokens": 4555,
+        "tool_search_requests": 0,
+        "turns": 2
+      }
+    },
+    {
+      "name": "Multi-Tool Finance Query",
+      "query": "Get the stock price of GOOGL and calculate interest on $5000 at 3% for 5 years",
+      "description": "Query requiring multiple finance tools",
+      "traditional": {
+        "input_tokens": 11421,
+        "output_tokens": 279,
+        "total_tokens": 11700,
+        "turns": 2
+      },
+      "embeddings": {
+        "input_tokens": 11723,
+        "output_tokens": 295,
+        "total_tokens": 12018,
+        "tool_search_requests": 0,
+        "turns": 2
+      },
+      "regex": {
+        "input_tokens": 4803,
+        "output_tokens": 485,
+        "total_tokens": 5288,
+        "tool_search_requests": 0,
+        "turns": 2
+      },
+      "bm25": {
+        "input_tokens": 4384,
+        "output_tokens": 538,
+        "total_tokens": 4922,
+        "tool_search_requests": 0,
+        "turns": 2
+      }
+    }
+  ]
+}
