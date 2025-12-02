@@ -75,13 +75,118 @@ python budget_compliance.py
 
 ---
 
+### 4. [Without Tool Search Tool](./Without-Tool-Search-Tool) 
+
+**Baseline comparison**: See the difference with traditional tool use where all tools are provided upfront.
+
+- **The Purpose**: Demonstrate token cost differences between approaches
+- **The Setup**: Same 40 tools, traditional API usage (all tools sent every time)
+- **Best For**: Understanding when tool search is worth it, cost comparison
+
+**Quick Start:**
+```powershell
+cd Without-Tool-Search-Tool
+pip install -r requirements.txt
+# Copy .env.example to .env and add your API key
+python without_tool_search.py
+```
+
+[Full Documentation](./Without-Tool-Search-Tool/README.md)
+
+---
+
+### 5. [Token Usage Test Suite](./Testcases) 
+
+**Compare token usage** across all implementations with automated testing and analysis.
+
+- **What It Does**: Runs identical queries across all 4 implementations
+- **Measurements**: Input tokens, output tokens, tool search requests, turn counts
+- **Analysis**: Automatic savings calculation, detailed comparison tables, JSON export
+- **Best For**: Understanding real-world token savings, optimizing costs
+
+**Quick Start:**
+```powershell
+cd Testcases
+pip install -r requirements.txt
+python compare_token_usage.py
+```
+
+**Sample Output:**
+```
+Traditional (Baseline)         3275     302          3577         -            2        -
+Embeddings Search              2156     288          2444         1            2        1133 (31.7%)
+Regex Search                   2089     291          2380         1            2        1197 (33.5%)
+BM25 Search                    2101     289          2390         1            2        1187 (33.2%)
+```
+
+[Full Documentation](./Testcases/README.md)
+
+---
+
+## Recent Enhancements 
+
+### Comprehensive Token Usage Tracking
+
+All implementations now include detailed token tracking:
+
+- **Per-turn metrics**: See token usage after each API call
+- **Tool search counters**: Track `server_tool_use.tool_search_requests`
+- **Conversation summaries**: Total input/output tokens and searches
+- **Example output**:
+  ```
+  📊 Token usage for this turn:
+     Input tokens: 2156
+     Output tokens: 288
+     Tool search requests: 1
+  
+  📊 TOKEN USAGE SUMMARY
+  Total input tokens:  4312
+  Total output tokens: 576
+  Total tokens:        4888
+  Tool search requests: 2
+  ```
+
+### JSON-Based Tool Library
+
+Centralized tool definitions for easy maintenance and scalability:
+
+- **40 tools** across 8 domains (Weather, Finance, Communication, Calendar, Files, Data, Travel, E-commerce)
+- **Unified source**: `tools_library.json` used by all implementations
+- **Easy expansion**: Add new tools in one place
+- **Universal mocks**: Realistic test data for all tool types
+
+### Robust Error Handling
+
+Production-ready error handling across all scripts:
+
+- Try-catch blocks around API calls
+- Enhanced debug information (error type, HTTP status, message context)
+- Response validation (empty content detection)
+- Proper handling of built-in search tools
+
+### Real-World Savings Demonstration
+
+With 40 tools, you can now see actual benefits:
+
+| Scenario | Traditional | Tool Search | Savings |
+|----------|-------------|-------------|---------|
+| Single tool query | ~3000 tokens | ~2000 tokens | **30-35%** |
+| Multi-tool query | ~3500 tokens | ~2500 tokens | **25-30%** |
+| Complex query | ~4000 tokens | ~3000 tokens | **20-25%** |
+
+*Note: With only 8 tools, Claude often skips tool search as overhead > benefit. With 40+ tools, the savings become significant!*
+
+---
+
 ## Feature Comparison
 
 | Feature | Token Savings | Accuracy Gain | Latency | Best Use Case |
 |---------|--------------|---------------|---------|---------------|
 | **Tool Use Examples** | Minimal | +18% (72%→90%) | Same | Complex tools with usage patterns |
-| **Tool Search Tool** | High | Maintained | Same | 50+ tools, dynamic discovery |
+| **Tool Search Tool** | 30-35% | Maintained | Same | 40+ tools, dynamic discovery |
 | **Programmatic Calling** | -37% | +10% | Lower | Large datasets, multi-step workflows |
+| **Without Tool Search** | Baseline | Baseline | Baseline | Comparison reference, <20 tools |
+| **Test Suite** | N/A | N/A | N/A | Token usage analysis, cost optimization |
 
 ---
 
@@ -140,6 +245,20 @@ claude-advanced-tool-use/
 │   ├── requirements.txt
 │   └── .env.example
 │
+├── Without-Tool-Search-Tool/    # Baseline: all tools upfront
+│   ├── README.md               # Comparison baseline docs
+│   ├── without_tool_search.py  # Traditional tool use
+│   ├── requirements.txt
+│   └── .env.example
+│
+├── Testcases/                   # Token usage comparison suite
+│   ├── README.md               # Test documentation
+│   ├── compare_token_usage.py  # Automated comparison tests
+│   ├── requirements.txt
+│   └── comparison_results.json # Test results
+│
+├── tools_library.json           # Shared 40-tool library
+├── IMPLEMENTATION_SUMMARY.md    # Detailed implementation docs
 └── README.md                    # This file
 ```
 
@@ -302,7 +421,10 @@ This repository contains implementations based on Anthropic's Advanced Tool Use 
 - [Tool Use Examples →](./Tool-Use-Examples/README.md)
 - [Tool Search Tool →](./Tool-Search-Tool/README.md)
 - [Programmatic Tool Calling →](./Programmatic-Tool-Calling/README.md)
+- [Without Tool Search (Baseline) →](./Without-Tool-Search-Tool/README.md) 
+- [Token Usage Test Suite →](./Testcases/README.md) 
+- [Implementation Summary →](./IMPLEMENTATION_SUMMARY.md) 
 
 ---
 
-**Built with Claude Sonnet 4** | **Updated November 2024**
+**Built with Claude Sonnet 4** | **Updated December 2024**
