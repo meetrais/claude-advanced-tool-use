@@ -1,0 +1,54 @@
+{
+    "mcp_servers": [
+        {
+            "name": "github",
+            "command": "npx.cmd",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-github"
+            ],
+            "env": {
+                "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+            },
+            "description": "GitHub MCP server for repository management, issues, pull requests, and code search"
+        },
+        {
+            "name": "filesystem",
+            "command": "npx.cmd",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-filesystem",
+                "${WORKSPACE_PATH}"
+            ],
+            "description": "Filesystem MCP server for reading and writing files"
+        },
+        {
+            "name": "brave-search",
+            "command": "npx.cmd",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-brave-search"
+            ],
+            "env": {
+                "BRAVE_API_KEY": "${BRAVE_API_KEY}"
+            },
+            "description": "Brave Search MCP server for web search capabilities"
+        },
+        {
+            "name": "postgres",
+            "command": "npx.cmd",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-postgres",
+                "${POSTGRES_CONNECTION_STRING}"
+            ],
+            "description": "PostgreSQL MCP server for database operations"
+        }
+    ],
+    "environment_variables": {
+        "GITHUB_TOKEN": "Your GitHub personal access token",
+        "WORKSPACE_PATH": "Path to workspace directory for filesystem operations",
+        "BRAVE_API_KEY": "Your Brave Search API key (optional)",
+        "POSTGRES_CONNECTION_STRING": "PostgreSQL connection string (optional)"
+    }
+}
