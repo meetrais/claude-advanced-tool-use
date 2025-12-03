@@ -1,0 +1,114 @@
+[
+  {
+    "query": {
+      "name": "GitHub Repository Search",
+      "query": "Search my GitHub repositories for projects related to Python and machine learning, then show me the most recent commits.",
+      "description": "Tests GitHub MCP server with complex multi-step operations"
+    },
+    "baseline": {
+      "input_tokens": 78961,
+      "output_tokens": 1735,
+      "total_tokens": 80696,
+      "defer": false,
+      "toon": false
+    },
+    "defer_json": {
+      "input_tokens": 5120,
+      "output_tokens": 345,
+      "total_tokens": 5465,
+      "defer": true,
+      "toon": false
+    },
+    "defer_toon": {
+      "input_tokens": 79883,
+      "output_tokens": 2223,
+      "total_tokens": 82106,
+      "defer": true,
+      "toon": true
+    }
+  },
+  {
+    "query": {
+      "name": "Filesystem Operations",
+      "query": "List all Python files in the current directory, read the contents of the largest one, and summarize what it does.",
+      "description": "Tests Filesystem MCP server with file discovery and reading"
+    },
+    "baseline": {
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "total_tokens": 0,
+      "defer": false,
+      "toon": false
+    },
+    "defer_json": {
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "total_tokens": 0,
+      "defer": true,
+      "toon": false
+    },
+    "defer_toon": {
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "total_tokens": 0,
+      "defer": true,
+      "toon": true
+    }
+  },
+  {
+    "query": {
+      "name": "Web Search and Analysis",
+      "query": "Search the web for the latest developments in Claude AI capabilities, and create a summary of the top 3 findings.",
+      "description": "Tests Brave Search MCP server with web queries"
+    },
+    "baseline": {
+      "input_tokens": 17871,
+      "output_tokens": 532,
+      "total_tokens": 18403,
+      "defer": false,
+      "toon": false
+    },
+    "defer_json": {
+      "input_tokens": 8377,
+      "output_tokens": 686,
+      "total_tokens": 9063,
+      "defer": true,
+      "toon": false
+    },
+    "defer_toon": {
+      "input_tokens": 8211,
+      "output_tokens": 670,
+      "total_tokens": 8881,
+      "defer": true,
+      "toon": true
+    }
+  },
+  {
+    "query": {
+      "name": "Multi-Server Complex Task",
+      "query": "Find Python files in this project using filesystem tools, search GitHub for similar projects, and search the web for best practices related to the topics you find.",
+      "description": "Tests coordination across multiple MCP servers"
+    },
+    "baseline": {
+      "input_tokens": 94111,
+      "output_tokens": 920,
+      "total_tokens": 95031,
+      "defer": false,
+      "toon": false
+    },
+    "defer_json": {
+      "input_tokens": 89027,
+      "output_tokens": 1855,
+      "total_tokens": 90882,
+      "defer": true,
+      "toon": false
+    },
+    "defer_toon": {
+      "input_tokens": 117902,
+      "output_tokens": 963,
+      "total_tokens": 118865,
+      "defer": true,
+      "toon": true
+    }
+  }
+]

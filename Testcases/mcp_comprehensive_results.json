@@ -1,0 +1,114 @@
+[
+  {
+    "query": {
+      "name": "GitHub Repos",
+      "query": "Give me details about my GitHub repos.",
+      "description": "Tests GitHub MCP server tool retrieval"
+    },
+    "base": {
+      "input_tokens": 33937,
+      "output_tokens": 1233,
+      "total_tokens": 35170,
+      "defer": false,
+      "toon": false
+    },
+    "defer": {
+      "input_tokens": 14363,
+      "output_tokens": 376,
+      "total_tokens": 14739,
+      "defer": true,
+      "toon": false
+    },
+    "toon": {
+      "input_tokens": 19946,
+      "output_tokens": 481,
+      "total_tokens": 20427,
+      "defer": true,
+      "toon": true
+    }
+  },
+  {
+    "query": {
+      "name": "Filesystem List",
+      "query": "List the files in the current directory.",
+      "description": "Tests Filesystem MCP server"
+    },
+    "base": {
+      "input_tokens": 25052,
+      "output_tokens": 200,
+      "total_tokens": 25252,
+      "defer": false,
+      "toon": false
+    },
+    "defer": {
+      "input_tokens": 724,
+      "output_tokens": 111,
+      "total_tokens": 835,
+      "defer": true,
+      "toon": false
+    },
+    "toon": {
+      "input_tokens": 724,
+      "output_tokens": 100,
+      "total_tokens": 824,
+      "defer": true,
+      "toon": true
+    }
+  },
+  {
+    "query": {
+      "name": "Brave Search",
+      "query": "Search for 'latest python version' on the web.",
+      "description": "Tests Brave Search MCP server"
+    },
+    "base": {
+      "input_tokens": 17636,
+      "output_tokens": 323,
+      "total_tokens": 17959,
+      "defer": false,
+      "toon": false
+    },
+    "defer": {
+      "input_tokens": 4397,
+      "output_tokens": 463,
+      "total_tokens": 4860,
+      "defer": true,
+      "toon": false
+    },
+    "toon": {
+      "input_tokens": 6944,
+      "output_tokens": 506,
+      "total_tokens": 7450,
+      "defer": true,
+      "toon": true
+    }
+  },
+  {
+    "query": {
+      "name": "File Content (Large)",
+      "query": "Read the contents of 'mcp_tool_search.py' in the MCP-Tool-Search-Tool directory.",
+      "description": "Tests retrieving large file content"
+    },
+    "base": {
+      "input_tokens": 25222,
+      "output_tokens": 342,
+      "total_tokens": 25564,
+      "defer": false,
+      "toon": false
+    },
+    "defer": {
+      "input_tokens": 9666,
+      "output_tokens": 498,
+      "total_tokens": 10164,
+      "defer": true,
+      "toon": false
+    },
+    "toon": {
+      "input_tokens": 10150,
+      "output_tokens": 591,
+      "total_tokens": 10741,
+      "defer": true,
+      "toon": true
+    }
+  }
+]

@@ -38,10 +38,12 @@ claude_client = Anthropic()
 print("✓ Claude client initialized")
 
 
+import py_toon_format
+
 class MCPToolSearchManager:
     """Manages MCP server connections and tool search integration."""
     
-    def __init__(self, config_path: str = "mcp_servers_config.json", debug: bool = False, defer_loading: bool = False):
+    def __init__(self, config_path: str = "mcp_servers_config.json", debug: bool = False, defer_loading: bool = False, use_toon: bool = False):
         """
         Initialize the MCP Tool Search Manager.
         
@@ -49,6 +51,7 @@ class MCPToolSearchManager:
             config_path: Path to MCP servers configuration JSON
             debug: Enable debug logging
             defer_loading: Whether to defer loading of tools (default: False)
+            use_toon: Whether to use TOON format for tool results (default: False)
         """
         self.config_path = config_path
         self.config = self._load_config()
@@ -58,6 +61,7 @@ class MCPToolSearchManager:
         self.transports = {}  # Store transport contexts
         self.debug = debug
         self.defer_loading = defer_loading
+        self.use_toon = use_toon
         
         print(f"✓ Loaded configuration for {len(self.config['mcp_servers'])} MCP servers")
     
@@ -247,7 +251,7 @@ class MCPToolSearchManager:
             Tool execution result as JSON string
         """
         if tool_name not in self.tool_to_server:
-            return json.dumps({"error": f"Unknown tool: {tool_name}"})
+            return self._encode_result({"error": f"Unknown tool: {tool_name}"})
         
         tool_info = self.tool_to_server[tool_name]
         session = tool_info['session']
@@ -263,24 +267,35 @@ class MCPToolSearchManager:
                 for item in result.content:
                     if hasattr(item, 'text'):
                         content_parts.append(item.text)
-                    elif hasattr(item, 'data'):
-                        content_parts.append(str(item.data))
+                content_str = "\n".join(content_parts) if content_parts else str(result.content)
                 
-                return json.dumps({
+                # Try to parse as JSON to allow TOON optimization
+                try:
+                    content_data = json.loads(content_str)
+                except:
+                    content_data = content_str
+            
+                return self._encode_result({
                     "success": True,
-                    "result": "\n".join(content_parts) if content_parts else str(result.content)
+                    "result": content_data
                 })
             else:
-                return json.dumps({
+                return self._encode_result({
                     "success": True,
                     "result": str(result)
                 })
                 
         except Exception as e:
-            return json.dumps({
+            return self._encode_result({
                 "success": False,
                 "error": str(e)
             })
+
+    def _encode_result(self, data: Dict) -> str:
+        """Encode result as JSON or TOON based on configuration."""
+        if self.use_toon:
+            return py_toon_format.encode(data)
+        return json.dumps(data)
     
     async def cleanup(self):
         """Close all MCP server connections."""
@@ -494,6 +509,7 @@ Examples:
     parser.add_argument("--config", type=str, default="mcp_servers_config.json", help="MCP server configuration file")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
     parser.add_argument("--defer-mcp-tools-loading", action="store_true", help="Enable deferred tool loading (default: False)")
+    parser.add_argument("--toon", action="store_true", help="Use TOON format for tool results (default: False)")
     
     args = parser.parse_args()
     
@@ -502,11 +518,13 @@ Examples:
     print("MCP TOOL SEARCH - Remote Tool Discovery & Execution")
     print("="*80)
     print(f"Deferred Loading: {'ENABLED' if args.defer_mcp_tools_loading else 'DISABLED'}")
+    print(f"TOON Format: {'ENABLED' if args.toon else 'DISABLED'}")
     
     mcp_manager = MCPToolSearchManager(
         config_path=args.config, 
         debug=args.debug,
-        defer_loading=args.defer_mcp_tools_loading
+        defer_loading=args.defer_mcp_tools_loading,
+        use_toon=args.toon
     )
     
     try:

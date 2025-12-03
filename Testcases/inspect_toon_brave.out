@@ -1,0 +1,25 @@
+--- Small Data ---
+JSON (28 chars): {"status": "ok", "count": 5}
+TOON (19 chars): status: ok
+count: 5
+
+--- Large Data ---
+JSON (751 chars): {"users": [{"id": 0, "name": "User0", "email": "user0@example.com", "active": true}, {"id": 1, "name": "User1", "email": "user1@example.com", "active": true}, {"id": 2, "name": "User2", "email": "user2@example.com", "active": true}, {"id": 3, "name": "User3", "email": "user3@example.com", "active": true}, {"id": 4, "name": "User4", "email": "user4@example.com", "active": true}, {"id": 5, "name": "User5", "email": "user5@example.com", "active": true}, {"id": 6, "name": "User6", "email": "user6@example.com", "active": true}, {"id": 7, "name": "User7", "email": "user7@example.com", "active": true}, {"id": 8, "name": "User8", "email": "user8@example.com", "active": true}, {"id": 9, "name": "User9", "email": "user9@example.com", "active": true}]}
+TOON (362 chars): users[10]{id,name,email,active}:
+  0,User0,user0@example.com,true
+  1,User1,user1@example.com,true
+  2,User2,user2@example.com,true
+  3,User3,user3@example.com,true
+  4,User4,user4@example.com,true
+  5,User5,user5@example.com,true
+  6,User6,user6@example.com,true
+  7,User7,user7@example.com,true
+  8,User8,user8@example.com,true
+  9,User9,user9@example.com,true
+
+--- Brave Search Data ---
+JSON (851 chars): [{"title": "Python 3.12.0 Release - Python.org", "url": "https://www.python.org/downloads/release/python-3120/", "description": "Oct 2, 2023 ... Python 3.12.0 is the newest major release of the Python programming language, and it contains many new features and optimizations."}, {"title": "Download Python | Python.org", "url": "https://www.python.org/downloads/", "description": "The official home of the Python Programming Language. ... Download the latest version. Download Python 3.12.0. Download Python 3.12.0."}, {"title": "Python 3.12 is out: Here are the new features | InfoWorld", "url": "https://www.infoworld.com/article/3707887/python-312-is-out-here-are-the-new-features.html", "description": "Oct 2, 2023 ... Python 3.12 includes a number of performance improvements, including better support for the specialized adaptive interpreter."}]
+TOON (770 chars): [3]{title,url,description}:
+  Python 3.12.0 Release - Python.org,"https://www.python.org/downloads/release/python-3120/","Oct 2, 2023 ... Python 3.12.0 is the newest major release of the Python programming language, and it contains many new features and optimizations."
+  Download Python | Python.org,"https://www.python.org/downloads/",The official home of the Python Programming Language. ... Download the latest version. Download Python 3.12.0. Download Python 3.12.0.
+  "Python 3.12 is out: Here are the new features | InfoWorld","https://www.infoworld.com/article/3707887/python-312-is-out-here-are-the-new-features.html","Oct 2, 2023 ... Python 3.12 includes a number of performance improvements, including better support for the specialized adaptive interpreter."

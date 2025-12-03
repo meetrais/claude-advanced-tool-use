@@ -1,0 +1,89 @@
+GitHub MCP Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ 'C:\\GenAI' ]
+Brave Search MCP Server running on stdio
+✓ Claude client initialized
+
+================================================================================
+MCP TOOL SEARCH - Remote Tool Discovery & Execution
+================================================================================
+Deferred Loading: DISABLED
+TOON Format: DISABLED
+✓ Loaded configuration for 4 MCP servers
+
+================================================================================
+INITIALIZING MCP SERVERS
+================================================================================
+Attempting to connect to 4 servers...
+(First-time setup may take several minutes to download servers)
+
+
+🔄 Connecting to github...
+   Command: npx.cmd -y @modelcontextprotocol/server-github
+   (Timeout: 30 seconds | May take 1-3 minutes on first run)
+✓ Successfully connected to github
+   📥 Fetching tools from github...
+   ✓ Fetched 26 tools from github
+
+🔄 Connecting to filesystem...
+   Command: npx.cmd -y @modelcontextprotocol/server-filesystem C:\GenAI
+   (Timeout: 30 seconds | May take 1-3 minutes on first run)
+✓ Successfully connected to filesystem
+   📥 Fetching tools from filesystem...
+   ✓ Fetched 14 tools from filesystem
+
+🔄 Connecting to brave-search...
+   Command: npx.cmd -y @modelcontextprotocol/server-brave-search
+   (Timeout: 30 seconds | May take 1-3 minutes on first run)
+✓ Successfully connected to brave-search
+   📥 Fetching tools from brave-search...
+   ✓ Fetched 2 tools from brave-search
+
+🔄 Connecting to postgres...
+   Command: npx.cmd -y @modelcontextprotocol/server-postgres postgresql://user:password@localhost:5432/dbname
+   (Timeout: 30 seconds | May take 1-3 minutes on first run)
+✓ Successfully connected to postgres
+   📥 Fetching tools from postgres...
+   ✓ Fetched 1 tools from postgres
+
+================================================================================
+INITIALIZATION COMPLETE
+================================================================================
+✓ Successfully connected to 4/4 servers
+✓ Total tools available: 43
+================================================================================
+
+
+================================================================================
+USER: 'test'
+Search Method: REGEX
+================================================================================
+
+
+--- Turn 1 ---
+
+📊 Token usage for this turn:
+   Input tokens: 8232
+   Output tokens: 98
+
+✓ Conversation complete
+
+ASSISTANT: I see you've sent 'test'. How can I help you today? I have access to various tools including:
+
+- **GitHub operations**: Search repositories, create/update files, manage issues and pull requests, etc.
+- **File system operations**: Read, write, search files and directories
+- **Web search**: Search the web using Brave Search
+- **Database queries**: Run SQL queries on PostgreSQL databases
+
+What would you like to do?
+
+================================================================================
+📊 TOKEN USAGE SUMMARY
+================================================================================
+Total input tokens:  8232
+Total output tokens: 98
+Total tokens:        8330
+================================================================================
+
+
+✓ MCP connections closed

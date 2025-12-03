@@ -1,0 +1,25 @@
+{
+  "timestamp": "2025-12-02T18:21:17.604719",
+  "query": "Give me details about my GitHub repos.",
+  "baseline": {
+    "input_tokens": 31848,
+    "output_tokens": 1308,
+    "total_tokens": 33156,
+    "defer": false,
+    "toon": false
+  },
+  "deferred": {
+    "input_tokens": 23629,
+    "output_tokens": 604,
+    "total_tokens": 24233,
+    "defer": true,
+    "toon": false
+  },
+  "deferred_toon": {
+    "input_tokens": 29663,
+    "output_tokens": 647,
+    "total_tokens": 30310,
+    "defer": true,
+    "toon": true
+  }
+}
