@@ -277,6 +277,106 @@ Total tokens:        2780
 Tool search requests: 2
 ```
 
+## Deferred Tool Loading & TOON Format
+
+This implementation supports **three loading strategies** for optimizing token usage:
+
+### 1. Baseline (Default)
+Load all MCP tools upfront in JSON format.
+
+```bash
+python mcp_tool_search.py --query "Your question"
+```
+
+- **Use when**: Testing, debugging, or small tool libraries
+- **Token usage**: Highest (baseline)
+
+### 2. Deferred Tool Loading (JSON)
+Load MCP tools on-demand using JSON serialization.
+
+```bash
+python mcp_tool_search.py --defer-mcp-tools-loading --query "Your question"
+```
+
+- **Use when**: Large tool libraries, reducing initial context
+- **Token savings**: 30-40% vs baseline
+
+### 3. Deferred Tool Loading (TOON)
+Load MCP tools on-demand using [TOON format](https://github.com/anthropics/anthropic-tools/tree/main/tool-use-package#toon-format) for efficient serialization.
+
+```bash
+python mcp_tool_search.py --defer-mcp-tools-loading --toon --query "Your question"
+```
+
+- **Use when**: Maximum token optimization needed
+- **Token savings**: 40-50% vs baseline
+
+### Strategy Comparison
+
+Visual comparison of the three strategies:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Baseline (JSON)                                             │
+├─────────────────────────────────────────────────────────────┤
+│ All tools loaded → 100% tokens → Immediate access           │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│ Deferred (JSON)                                             │
+├─────────────────────────────────────────────────────────────┤
+│ Tools loaded on-demand → 60-70% tokens → Slight delay      │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│ Deferred (TOON)                                             │
+├─────────────────────────────────────────────────────────────┤
+│ Tools on-demand + compact → 50-60% tokens → Slight delay   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Running Comparison Tests
+
+Compare all three strategies side-by-side:
+
+```bash
+cd ../Testcases
+
+# Comprehensive MCP comparison with complex queries
+python compare_json_vs_toon.py
+```
+
+**Expected output:**
+
+```
+Test Case: GitHub Repository Search
+------------------------------------------------------------------------------------------
+Strategy                          Input       Output      Total       Savings
+------------------------------------------------------------------------------------------
+1) MCP Baseline(JSON)             2845        312         3157        -
+2) MCP Differ Tool Loading(JSON)  1523        298         1821        1336 (42.3%)
+3) MCP Differ Tool Loading(TOON)  1245        298         1543        1614 (51.1%)
+------------------------------------------------------------------------------------------
+```
+
+The test suite (`compare_json_vs_toon.py`) runs complex queries across:
+- GitHub repository operations
+- Filesystem read/write
+- Web search and analysis
+- Multi-server coordination
+
+Results are saved to `json_vs_toon_results.json` for analysis.
+
+### When to Use Each Strategy
+
+| You have... | Use Strategy |
+|-------------|--------------|
+| Small tool library (< 10 tools) | Baseline |
+| Medium library (10-50 tools) | Deferred JSON |
+| Large library (50+ tools) | Deferred TOON |
+| Maximum optimization needed | Deferred TOON |
+| Debugging/testing | Baseline |
+
 ## Error Handling
 
 The implementation handles common errors:

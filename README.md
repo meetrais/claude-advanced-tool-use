@@ -123,6 +123,52 @@ BM25 Search                    2101     289          2390         1            2
 
 ---
 
+### 6. [MCP Tool Search Tool](./MCP-Tool-Search-Tool) 
+
+**Combine Tool Search with Model Context Protocol** for dynamic tool discovery from remote servers.
+
+- **What It Does**: Integrates with MCP servers (GitHub, Filesystem, Brave Search, etc.)
+- **Capabilities**: Dynamic tool fetching, deferred loading, TOON format support
+- **Token Savings**: 40-50% with deferred loading + TOON format
+- **Best For**: Remote tool execution, multi-server orchestration, MCP ecosystem integration
+
+**Quick Start:**
+```powershell
+cd MCP-Tool-Search-Tool
+pip install -r requirements.txt
+# Copy .env.example to .env and add API keys
+python mcp_tool_search.py --query "List my GitHub repositories"
+```
+
+**Key Features:**
+- **Three Loading Strategies**:
+  - Baseline: Load all MCP tools upfront (default)
+  - Deferred JSON: `--defer-mcp-tools-loading` (30-40% savings)
+  - Deferred TOON: `--defer-mcp-tools-loading --toon` (40-50% savings)
+  
+**Comparison Testing:**
+```powershell
+cd Testcases
+# Compare all three strategies with complex MCP queries
+python compare_json_vs_toon.py
+```
+
+**Sample Output:**
+```
+Test Case: GitHub Repository Search
+------------------------------------------------------------------------------------------
+Strategy                          Input       Output      Total       Savings
+------------------------------------------------------------------------------------------
+1) MCP Baseline(JSON)             2845        312         3157        -
+2) MCP Differ Tool Loading(JSON)  1523        298         1821        1336 (42.3%)
+3) MCP Differ Tool Loading(TOON)  1245        298         1543        1614 (51.1%)
+------------------------------------------------------------------------------------------
+```
+
+[Full Documentation](./MCP-Tool-Search-Tool/README.md)
+
+---
+
 ## Recent Enhancements 
 
 ### Comprehensive Token Usage Tracking
@@ -185,6 +231,7 @@ With 40 tools, you can now see actual benefits:
 | **Tool Use Examples** | Minimal | +18% (72%→90%) | Same | Complex tools with usage patterns |
 | **Tool Search Tool** | 30-35% | Maintained | Same | 40+ tools, dynamic discovery |
 | **Programmatic Calling** | -37% | +10% | Lower | Large datasets, multi-step workflows |
+| **MCP Tool Search Tool** | 40-50% | Maintained | Same | Remote MCP servers, multi-server orchestration |
 | **Without Tool Search** | Baseline | Baseline | Baseline | Comparison reference, <20 tools |
 | **Test Suite** | N/A | N/A | N/A | Token usage analysis, cost optimization |
 
@@ -245,6 +292,13 @@ claude-advanced-tool-use/
 │   ├── requirements.txt
 │   └── .env.example
 │
+├── MCP-Tool-Search-Tool/        # MCP + Tool Search integration
+│   ├── README.md               # Detailed documentation
+│   ├── mcp_tool_search.py      # Main MCP tool search script
+│   ├── mcp_servers_config.json # MCP server configuration
+│   ├── requirements.txt
+│   └── .env.example
+│
 ├── Without-Tool-Search-Tool/    # Baseline: all tools upfront
 │   ├── README.md               # Comparison baseline docs
 │   ├── without_tool_search.py  # Traditional tool use
@@ -253,7 +307,9 @@ claude-advanced-tool-use/
 │
 ├── Testcases/                   # Token usage comparison suite
 │   ├── README.md               # Test documentation
-│   ├── compare_token_usage.py  # Automated comparison tests
+│   ├── compare_token_usage.py  # Tool search comparisons
+│   ├── compare_json_vs_toon.py # MCP strategy comparisons
+│   ├── compare_mcp_token_usage_toon.py # MCP token tests
 │   ├── requirements.txt
 │   └── comparison_results.json # Test results
 │
@@ -421,6 +477,7 @@ This repository contains implementations based on Anthropic's Advanced Tool Use 
 - [Tool Use Examples →](./Tool-Use-Examples/README.md)
 - [Tool Search Tool →](./Tool-Search-Tool/README.md)
 - [Programmatic Tool Calling →](./Programmatic-Tool-Calling/README.md)
+- [MCP Tool Search Tool →](./MCP-Tool-Search-Tool/README.md)
 - [Without Tool Search (Baseline) →](./Without-Tool-Search-Tool/README.md) 
 - [Token Usage Test Suite →](./Testcases/README.md) 
 - [Implementation Summary →](./IMPLEMENTATION_SUMMARY.md) 

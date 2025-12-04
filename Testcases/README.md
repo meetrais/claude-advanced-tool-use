@@ -245,3 +245,136 @@ After running the tests:
 
 - [Anthropic Tool Use Documentation](https://docs.anthropic.com/en/docs/build-with-claude/tool-use)
 - [Token Counting Best Practices](https://docs.anthropic.com/en/docs/build-with-claude/token-counting)
+
+---
+
+## MCP Token Usage Comparison
+
+This folder also contains specialized tests for comparing token usage across different MCP (Model Context Protocol) strategies, including JSON vs TOON format serialization.
+
+### Available MCP Tests
+
+#### 1. `compare_mcp_token_usage_toon.py`
+
+Compares token usage across three MCP tool loading strategies with predefined test queries.
+
+**Strategies tested:**
+- **MCP Baseline (JSON)**: Load all MCP tools upfront using standard JSON format
+- **MCP Deferred Tool Loading (JSON)**: Load MCP tools on-demand using JSON format
+- **MCP Deferred Tool Loading (TOON)**: Load MCP tools on-demand using TOON format
+
+**Usage:**
+```bash
+python compare_mcp_token_usage_toon.py
+```
+
+**Test Queries:**
+- GitHub repository details
+- Filesystem directory listing
+- Brave web search
+- Large file content reading
+
+#### 2. `compare_json_vs_toon.py`
+
+Performs comprehensive MCP token usage comparison across all three strategies with complex real-world queries.
+
+**Usage:**
+```bash
+python compare_json_vs_toon.py
+```
+
+**Test Queries:**
+- **GitHub Repository Search**: Multi-step operations (search repos + recent commits)
+- **Filesystem Operations**: File discovery, reading, and summarization
+- **Web Search and Analysis**: Search + analysis + summarization
+- **Multi-Server Complex Task**: Coordination across multiple MCP servers
+
+### Expected Output Format
+
+Both scripts produce formatted comparison tables:
+
+```
+Test Case: GitHub Repository Search
+------------------------------------------------------------------------------------------
+Strategy                          Input       Output      Total       Savings
+------------------------------------------------------------------------------------------
+1) MCP Baseline(JSON)             2845        312         3157        -
+2) MCP Differ Tool Loading(JSON)  1523        298         1821        1336 (42.3%)
+3) MCP Differ Tool Loading(TOON)  1245        298         1543        1614 (51.1%)
+------------------------------------------------------------------------------------------
+```
+
+### Understanding MCP Comparison Results
+
+**Key Differences:**
+- **Baseline** loads all tools from MCP servers upfront (highest token usage)
+- **Deferred (JSON)** loads tools only when needed (medium token usage)
+- **Deferred (TOON)** loads tools on-demand with TOON serialization (lowest token usage)
+
+**Savings Calculation:**
+- Compares against the baseline (row 1)
+- Shows both absolute token savings and percentage reduction
+
+### Prerequisites for MCP Tests
+
+1. **MCP Server Configuration**: Ensure `MCP-Tool-Search-Tool/mcp_servers_config.json` is properly configured
+
+2. **Running MCP Servers**: Some tests require active MCP servers:
+   ```bash
+   # Example: GitHub MCP server
+   npx -y @modelcontextprotocol/server-github
+   ```
+
+3. **Environment Variables**: Set required credentials in `.env` file:
+   - `ANTHROPIC_API_KEY` - Your Anthropic API key
+   - `GITHUB_TOKEN` - For GitHub MCP server (if using)
+   - `BRAVE_API_KEY` - For Brave search MCP server (if using)
+
+### Running MCP Tests
+
+```bash
+# Run basic MCP comparison
+python compare_mcp_token_usage_toon.py
+
+# Run comprehensive MCP comparison with complex queries
+python compare_json_vs_toon.py
+```
+
+### MCP Test Results
+
+Results are saved to JSON files:
+- `compare_mcp_token_usage_toon.py` → `mcp_comprehensive_results.json`
+- `compare_json_vs_toon.py` → `json_vs_toon_results.json`
+
+### Important Notes for MCP Tests
+
+⚠️ **Performance**: MCP tests take longer than standard tool search tests because they:
+- Connect to remote MCP servers
+- Load tools dynamically
+- Execute actual tool operations
+- Make multiple API calls per strategy
+
+⚠️ **API Costs**: Each test query runs 3 times (one per strategy), so the comprehensive test makes 12 MCP operations total (4 queries × 3 strategies).
+
+⚠️ **Network Requirements**: MCP tests require:
+- Active internet connection
+- Access to MCP server endpoints
+- Valid API credentials for each MCP server
+
+### Troubleshooting MCP Tests
+
+**MCP Server Connection Fails:**
+- Verify MCP servers are running (`npx -y @modelcontextprotocol/server-github`)
+- Check `mcp_servers_config.json` configuration
+- Ensure environment variables are set correctly
+
+**Token Parsing Errors:**
+- Check that `mcp_tool_search.py` completes successfully
+- Verify output includes "Total tokens:" summary
+- Review raw output logs for debugging
+
+**Timeout Issues:**
+- MCP servers may take 1-3 minutes on first run
+- Increase timeout in server configuration if needed
+- Check network connectivity and firewall settings
+
